@@ -1,52 +1,31 @@
-const XLSX = require('xlsx');
-const XlsxPopulate = require('xlsx-populate');
-const { styleColumn } = require('./js/utils');
-let style = {
-  fontSize: 18,
-    bold: true,
-    horizontalAlignment: "center",
-    verticalAlignment: "center",
-    border: true,
-    // fontColor: 'FF0000',
-    shrinkToFit: true,
-}
+const XLSX = require("xlsx");
+const XlsxPopulate = require("xlsx-populate");
+const { styleColumn } = require("./js/utils");
+const {
+  style_data,
+  style_header,
+  mergeDestinations,
+  combinations,
+} = require("./js/data");
+
 // Read the Excel file
-const workbook = XLSX.readFile('./test.xlsx');
+const workbook = XLSX.readFile("./test.xlsx");
 const sheetName = workbook.SheetNames[0];
 const worksheet = workbook.Sheets[sheetName];
-
-// List of destinations to merge into "ديوان المديرية"
-const mergeDestinations = [
-  "وحدة الخدمات", "مفتش الدخلية", "ادارة شئون الخدمة", "م.المدير للوحدات",
-  "م.المدير للشؤن المالية", "م.المدير للافراد والتدريب", "1قسم العلاقات",
-  "1قسم الانضباط", "1قسم الاسلحة", "1قسم المعلومات والتوثيق", "1قسم الانشاءات",
-  "م.المدير للامن العام", "1قسم التخطيط والمتابعة", "1قسم التحقيقات", "1قسم الرخص",
-  "نائب م.الامن", "1قسم الرقابة الجنائية", "1قسم حقوق الانسان",
-];
 
 // Group data based on 'الجهة'
 const groupedData = {};
 
 function normalizeDestination(destination) {
-  // Combine 'بوفيه' and 'مستشفى' into a single category
-  if (destination === 'بوفيه' || destination === 'مستشفى') {
-    return 'بوفيه_مستشفى';
-  }
-
-  // Combine 'مباحث الادارة' and 'السياسين' into a single category
-  if (destination === 'مباحث الادارة' || destination === 'السياسين') {
-    return 'مباحث_سياسين';
-  }
-
-  return destination;
+  return combinations[destination] || destination;
 }
 
 function processRow(row) {
-  let destination = normalizeDestination(row['الجهة']);
+  let destination = normalizeDestination(row["الجهة"]);
 
   // Check if the destination is in the mergeDestinations list or if it's undefined
   if (!destination || mergeDestinations.includes(destination)) {
-    destination = 'ديوان المديرية';
+    destination = "ديوان المديرية";
   }
 
   if (!groupedData[destination]) {
@@ -67,52 +46,74 @@ for (const destination in groupedData) {
   newWorkbook
     .then((workbook) => {
       const newWorksheet = workbook.sheet(0);
+      const headerMappings = [
+        "الاسم",
+        "الرقم القومى",
+        "الجهة",
+        "المبلغ",
+        "التوقيع",
+      ];
 
-        newWorksheet.column("A").width(35);
-        newWorksheet.column("B").width(30);
-        newWorksheet.column("C").width(15);
-        newWorksheet.column("D").width(10);
-        newWorksheet.column("E").width(10);
-    
+      // Set column widths
+      const columnWidths = [35, 30, 15, 10, 35];
+      const columns = ["A", "B", "C", "D", "E"];
+      columns.forEach((col, index) =>
+        newWorksheet.column(col).width(columnWidths[index])
+      );
 
-      // Add styles to the worksheet (fill color for illustration)
-      newWorksheet.cell('A1').value('الاسم');
-      newWorksheet.cell('B1').value('الرقم القومى');
-      newWorksheet.cell('C1').value('الجهة');
-      newWorksheet.cell('D1').value('المبلغ');
-      newWorksheet.cell('E1').value('التوقيع');
+      // Add headers
+      const headers = ["الاسم", "الرقم القومى", "الجهة", "المبلغ", "التوقيع"];
+      headers.forEach((header, index) =>
+        newWorksheet
+          .cell(`${columns[index]}1`)
+          .value(header)
+          .style(style_header)
+      );
 
       // Add data to the new worksheet
       groupedData[destination].forEach((row, rowIndex) => {
-        newWorksheet.cell(`A${rowIndex + 2}`).value(row['الاسم']);
-        newWorksheet.cell(`B${rowIndex + 2}`).value(row['الرقم القومى']);
-        newWorksheet.cell(`C${rowIndex + 2}`).value(row['الجهة']);
-        newWorksheet.cell(`D${rowIndex + 2}`).value(row['المبلغ']);
-        newWorksheet.cell(`E${rowIndex + 2}`).value(row['التوقيع']);
-        styleColumn(newWorksheet, "A", rowIndex, style);
-        styleColumn(newWorksheet, "B", rowIndex, style);
-        styleColumn(newWorksheet, "C", rowIndex, style);
-        styleColumn(newWorksheet, "D", rowIndex, style);
-        styleColumn(newWorksheet, "E", rowIndex, style);
+        columns.forEach((col, index) => {
+          const value = row[headerMappings[index]];
+          const formattedValue = value ? value.toLocaleString("ar-EG") : ""; // Check if value exists before formatting
+
+          newWorksheet
+            .cell(`${col}${rowIndex + 2}`)
+            .value(formattedValue)
+            .style({ numberFormat: "0.00" });
+          styleColumn(newWorksheet, col, rowIndex + 1, style_data);
+        });
       });
 
       // Sum the values in the 'المبلغ' column
       const totalAmount = groupedData[destination].reduce(
-        (total, row) => total + parseFloat(row['المبلغ'] || 0),
+        (total, row) => total + parseFloat(row["المبلغ"] || 0),
         0
       );
 
+      const lastRowIndex = groupedData[destination].length + 2;
+
       // Add total row with total in the fourth column (index 3)
-      newWorksheet.cell(`A${groupedData[destination].length + 2}`).value('الاجمالى');
-      newWorksheet.cell(`B${groupedData[destination].length + 2}`).value(totalAmount.toFixed(2));
+      const totalRowHeaders = ["الاجمالى", "", "", totalAmount.toLocaleString('ar-EG'), ""];
+      const totalRowColumns = ["A", "B", "C", "D", "E"];
+
+      totalRowColumns.forEach((col, index) => {
+        newWorksheet
+          .cell(`${col}${lastRowIndex}`)
+          .value(totalRowHeaders[index])
+          .style(style_header);
+      });
+      newWorksheet.rightToLeft(true);
 
       // Save the new workbook
       return workbook.toFileAsync(`${destination}.xlsx`);
     })
     .then(() => {
-      console.log(`Styles added to ${destination}.xlsx`);
+      console.log(`Styles and data added to ${destination}.xlsx`);
     })
     .catch((error) => {
-      console.error(`Error adding styles to ${destination}.xlsx:`, error.message);
+      console.error(
+        `Error adding styles and data to ${destination}.xlsx:`,
+        error.message
+      );
     });
 }

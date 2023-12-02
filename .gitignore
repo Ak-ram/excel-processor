@@ -4,6 +4,10 @@ node_modules/
 # Ignore log files
 *.log
 
+# Ignore log files
+*.xlsx
+
+
 # Ignore .env files
 .env
 
