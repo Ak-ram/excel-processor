@@ -1,6 +1,11 @@
 const XLSX = require("xlsx");
+const fs = require("fs");
 const XlsxPopulate = require("xlsx-populate");
 const { styleColumn } = require("./js/utils");
+let date = new Date().toLocaleDateString("ar-eg", {
+  month: "long",
+  year: "numeric",
+});
 const {
   style_data,
   style_header,
@@ -55,7 +60,7 @@ for (const destination in groupedData) {
       ];
 
       // Set column widths
-      const columnWidths = [35, 30, 15, 10, 35];
+      const columnWidths = [35, 30, 15, 10, 40];
       const columns = ["B", "C", "D", "E", "F"];
       columns.forEach((col, index) =>
         newWorksheet.column(col).width(columnWidths[index])
@@ -69,6 +74,7 @@ for (const destination in groupedData) {
           .style(style_header)
       );
 
+      newWorksheet.cell("A1").value("م").style(style_header);
       let serialNumber = 1;
       groupedData[destination].forEach((row, rowIndex) => {
         // Increment the serial number for each row
@@ -114,9 +120,16 @@ for (const destination in groupedData) {
           .style(style_header);
       });
       newWorksheet.rightToLeft(true);
+      // Save the new workbook in th` "${}مرتبات شهر  directory
+      const filePath = `./مرتبات شهر ${date} /${destination}.xlsx`;
+
+      // Ensure th` "${}مرتبات شهر " directory exists
+      if (!fs.existsSync(`./مرتبات شهر ${date} `)) {
+        fs.mkdirSync(`./مرتبات شهر ${date} `);
+      }
 
       // Save the new workbook
-      return workbook.toFileAsync(`${destination}.xlsx`);
+      return workbook.toFileAsync(filePath);
     })
     .then(() => {
       console.log(`Styles and data added to ${destination}.xlsx`);
