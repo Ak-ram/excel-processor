@@ -4,6 +4,21 @@ This script processes an Excel file, groups data based on a specific column, and
 
 ## Getting Started 🚀
 
+
+
+
+![Split File](https://github.com/Ak-ram/excel-processor/assets/69124951/31032b55-6b66-4d3d-9273-77bbf9c829f4)
+
+
+
+
+
+
+
+
+
+
+
 ### Prerequisites
 
 - Node.js installed on your machine 🌐
