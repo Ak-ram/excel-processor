@@ -7,7 +7,7 @@ const {
   mergeDestinations,
   combinations,
 } = require("./js/data");
-
+// let serialNumber = 1;
 // Read the Excel file
 const workbook = XLSX.readFile("./test.xlsx");
 const sheetName = workbook.SheetNames[0];
@@ -56,26 +56,32 @@ for (const destination in groupedData) {
 
       // Set column widths
       const columnWidths = [35, 30, 15, 10, 35];
-      const columns = ["A", "B", "C", "D", "E"];
+      const columns = ["B", "C", "D", "E", "F"];
       columns.forEach((col, index) =>
         newWorksheet.column(col).width(columnWidths[index])
       );
 
       // Add headers
-      const headers = ["الاسم", "الرقم القومى", "الجهة", "المبلغ", "التوقيع"];
-      headers.forEach((header, index) =>
+      headerMappings.forEach((header, index) =>
         newWorksheet
           .cell(`${columns[index]}1`)
           .value(header)
           .style(style_header)
       );
 
-      // Add data to the new worksheet
+      let serialNumber = 1;
       groupedData[destination].forEach((row, rowIndex) => {
+        // Increment the serial number for each row
+        const currentSerialNumber = serialNumber++;
+        // Add the serial number to the first column
+        newWorksheet
+          .cell("A" + (rowIndex + 2))
+          .value(currentSerialNumber)
+          .style(style_data);
+        // Shift the rest of the columns to the right
         columns.forEach((col, index) => {
           const value = row[headerMappings[index]];
-          const formattedValue = value ? value.toLocaleString("ar-EG") : ""; // Check if value exists before formatting
-
+          const formattedValue = value ? value.toLocaleString("ar-EG") : "";
           newWorksheet
             .cell(`${col}${rowIndex + 2}`)
             .value(formattedValue)
@@ -83,7 +89,6 @@ for (const destination in groupedData) {
           styleColumn(newWorksheet, col, rowIndex + 1, style_data);
         });
       });
-
       // Sum the values in the 'المبلغ' column
       const totalAmount = groupedData[destination].reduce(
         (total, row) => total + parseFloat(row["المبلغ"] || 0),
@@ -93,8 +98,14 @@ for (const destination in groupedData) {
       const lastRowIndex = groupedData[destination].length + 2;
 
       // Add total row with total in the fourth column (index 3)
-      const totalRowHeaders = ["الاجمالى", "", "", totalAmount.toLocaleString('ar-EG'), ""];
-      const totalRowColumns = ["A", "B", "C", "D", "E"];
+      const totalRowHeaders = [
+        "الاجمالى",
+        "",
+        "",
+        totalAmount.toLocaleString("ar-EG"),
+        "",
+      ];
+      const totalRowColumns = ["B", "C", "D", "E", "F"];
 
       totalRowColumns.forEach((col, index) => {
         newWorksheet
