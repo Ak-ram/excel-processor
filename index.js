@@ -1,4 +1,5 @@
 const XLSX = require('xlsx');
+const XlsxPopulate = require('xlsx-populate');
 
 // Read the Excel file
 const workbook = XLSX.readFile('./test.xlsx');
@@ -47,28 +48,54 @@ function processRow(row) {
 }
 
 // Iterate through each row and process it
-XLSX.utils.sheet_to_json(worksheet, { raw: true }).forEach(processRow);
+const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+jsonData.forEach(processRow);
 
 // Create a new workbook for each group
 for (const destination in groupedData) {
-  const newWorkbook = XLSX.utils.book_new();
-  const newWorksheet = XLSX.utils.json_to_sheet(groupedData[destination]);
+  const newWorkbook = XlsxPopulate.fromBlankAsync();
 
-  // Sum the values in the 'المبلغ' column
-  const totalAmount = groupedData[destination].reduce((total, row) => total + parseFloat(row['المبلغ'] || 0), 0);
+  newWorkbook
+    .then((workbook) => {
+      const newWorksheet = workbook.sheet(0);
 
-  // Add total row with total in the fourth column (index 3)
-  const totalRow = {
-    الاسم: 'الاجمالى',
-    المبلغ: '', // Empty for formatting purposes
-    الرقم_القومي: '', // Add columns based on your data structure
-    الجهة: totalAmount.toFixed(2), // Round to 2 decimal places
-    التوقيع: '', // Add columns based on your data structure
-  };
-  XLSX.utils.sheet_add_json(newWorksheet, [totalRow], { skipHeader: true, origin: -1 });
+        newWorksheet.column("A").width(35);
+        newWorksheet.column("B").width(30);
+        newWorksheet.column("C").width(15);
+        newWorksheet.column("D").width(10);
+    
 
-  XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
+      // Add styles to the worksheet (fill color for illustration)
+      newWorksheet.cell('A1').value('الاسم');
+      newWorksheet.cell('B1').value('الرقم القومى');
+      newWorksheet.cell('C1').value('الجهة');
+      newWorksheet.cell('D1').value('المبلغ');
 
-  // Save the new workbook
-  XLSX.writeFile(newWorkbook, `${destination}.xlsx`);
+      // Add data to the new worksheet
+      groupedData[destination].forEach((row, rowIndex) => {
+        newWorksheet.cell(`A${rowIndex + 2}`).value(row['الاسم']);
+        newWorksheet.cell(`B${rowIndex + 2}`).value(row['الرقم القومى']);
+        newWorksheet.cell(`C${rowIndex + 2}`).value(row['الجهة']);
+        newWorksheet.cell(`D${rowIndex + 2}`).value(row['المبلغ']);
+      });
+
+      // Sum the values in the 'المبلغ' column
+      const totalAmount = groupedData[destination].reduce(
+        (total, row) => total + parseFloat(row['المبلغ'] || 0),
+        0
+      );
+
+      // Add total row with total in the fourth column (index 3)
+      newWorksheet.cell(`A${groupedData[destination].length + 2}`).value('الاجمالى');
+      newWorksheet.cell(`B${groupedData[destination].length + 2}`).value(totalAmount.toFixed(2));
+
+      // Save the new workbook
+      return workbook.toFileAsync(`${destination}.xlsx`);
+    })
+    .then(() => {
+      console.log(`Styles added to ${destination}.xlsx`);
+    })
+    .catch((error) => {
+      console.error(`Error adding styles to ${destination}.xlsx:`, error.message);
+    });
 }
