@@ -1,6 +1,15 @@
 const XLSX = require('xlsx');
 const XlsxPopulate = require('xlsx-populate');
-
+const { styleColumn } = require('./js/utils');
+let style = {
+  fontSize: 18,
+    bold: true,
+    horizontalAlignment: "center",
+    verticalAlignment: "center",
+    border: true,
+    // fontColor: 'FF0000',
+    shrinkToFit: true,
+}
 // Read the Excel file
 const workbook = XLSX.readFile('./test.xlsx');
 const sheetName = workbook.SheetNames[0];
@@ -63,6 +72,7 @@ for (const destination in groupedData) {
         newWorksheet.column("B").width(30);
         newWorksheet.column("C").width(15);
         newWorksheet.column("D").width(10);
+        newWorksheet.column("E").width(10);
     
 
       // Add styles to the worksheet (fill color for illustration)
@@ -70,6 +80,7 @@ for (const destination in groupedData) {
       newWorksheet.cell('B1').value('الرقم القومى');
       newWorksheet.cell('C1').value('الجهة');
       newWorksheet.cell('D1').value('المبلغ');
+      newWorksheet.cell('E1').value('التوقيع');
 
       // Add data to the new worksheet
       groupedData[destination].forEach((row, rowIndex) => {
@@ -77,6 +88,12 @@ for (const destination in groupedData) {
         newWorksheet.cell(`B${rowIndex + 2}`).value(row['الرقم القومى']);
         newWorksheet.cell(`C${rowIndex + 2}`).value(row['الجهة']);
         newWorksheet.cell(`D${rowIndex + 2}`).value(row['المبلغ']);
+        newWorksheet.cell(`E${rowIndex + 2}`).value(row['التوقيع']);
+        styleColumn(newWorksheet, "A", rowIndex, style);
+        styleColumn(newWorksheet, "B", rowIndex, style);
+        styleColumn(newWorksheet, "C", rowIndex, style);
+        styleColumn(newWorksheet, "D", rowIndex, style);
+        styleColumn(newWorksheet, "E", rowIndex, style);
       });
 
       // Sum the values in the 'المبلغ' column
