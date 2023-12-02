@@ -87,7 +87,7 @@ for (const destination in groupedData) {
         // Add the serial number to the first column
         newWorksheet
           .cell("A" + (rowIndex + 2))
-          .value(currentSerialNumber)
+          .value((currentSerialNumber).toLocaleString('ar-EG'))
           .style(style_data);
         // Shift the rest of the columns to the right
         columns.forEach((col, index) => {
@@ -191,7 +191,7 @@ summaryWorkbook
       const rowIndex = index + 3;
       summarySheet
         .cell(`${summaryColumns[0]}${rowIndex}`)
-        .value(index+1)
+        .value((index+1).toLocaleString('ar-EG'))
         .style(style_data);
       summarySheet
         .cell(`${summaryColumns[1]}${rowIndex}`)
