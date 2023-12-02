@@ -13,9 +13,9 @@ This script processes an Excel file, groups data based on a specific column, and
 
 1. Clone the repository:
 
-```
+   ```
    git clone https://github.com/your-username/your-repo.git
-```
+   ```
 
 2. Install dependencies:
 
