@@ -68,9 +68,9 @@ The script uses Node.js and several npm packages, including XLSX and XlsxPopulat
 - Adjust the path to the Excel file, column names, and other parameters as needed.
 
 
-> [!note]
+> [!important]
 > - **This script is specifically crafted to handle Excel sheets containing tables with a predefined header.**
-> - The required headers are: [الاسم, الرقم القومى, الجهة, المبلغ, التوقيع], as illustrated in the accompanying image."
+> - The required headers are: [الاسم, الرقم القومى, الجهة, المبلغ, التوقيع], as illustrated in the accompanying image.
 >   
 >  ![Web capture_3-12-2023_103743_](https://github.com/Ak-ram/excel-processor/assets/69124951/a0e43b88-466f-4dd3-93e5-56c4775bdcae)
 
