@@ -48,6 +48,20 @@ node excelProcessor.js /path/to/your/excel/file.xlsx
 
 Replace `/path/to/your/excel/file.xlsx` with the actual path to your Excel file.
 
+
+#### showcase
+
+
+![Animation](https://github.com/Ak-ram/excel-processor/assets/69124951/c25bc379-2823-4889-b49a-d08354240b93)
+
+
+
+
+
+
+
+
+
 ## Code Overview 🧐
 
 The script uses Node.js and several npm packages, including XLSX and XlsxPopulate, to process Excel files. It performs the following steps:
@@ -73,6 +87,8 @@ The script uses Node.js and several npm packages, including XLSX and XlsxPopulat
 > - The required headers are: [الاسم, الرقم القومى, الجهة, المبلغ, التوقيع], as illustrated in the accompanying image.
 >   
 >  ![Web capture_3-12-2023_103743_](https://github.com/Ak-ram/excel-processor/assets/69124951/a0e43b88-466f-4dd3-93e5-56c4775bdcae)
+
+
 
 ## License 📜
 
